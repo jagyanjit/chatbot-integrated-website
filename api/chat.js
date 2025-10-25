@@ -8,53 +8,44 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Missing message" });
   }
 
-  // ✅ DistilGPT-2 - GUARANTEED to work, no 404 errors
-  const HF_MODEL = "distilgpt2";
-  const HF_URL = `https://api-inference.huggingface.co/models/${HF_MODEL}`;
+  // ✅ Using GPT-2 - most stable option
+  const url = "https://api-inference.huggingface.co/models/gpt2";
+  const apiKey = process.env.HF_API_KEY;
 
   try {
-    console.log("🚀 Model:", HF_MODEL);
-    
-    const response = await fetch(HF_URL, {
+    const response = await fetch(url, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${process.env.HF_API_KEY}`,
+        "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         inputs: message,
         parameters: {
-          max_length: 100,
-          temperature: 0.8,
-          return_full_text: false
-        },
-        options: {
-          wait_for_model: true
+          max_new_tokens: 50,
+          return_full_text: false,
+          temperature: 0.7
         }
       })
     });
 
-    const contentType = response.headers.get("content-type");
-    
-    if (!contentType?.includes("application/json")) {
-      const text = await response.text();
-      console.error("Non-JSON:", text);
+    if (!response.ok) {
+      const error = await response.text();
+      console.error("API Error:", error);
       return res.status(200).json({ 
-        reply: "Loading... try again! ⏳"
+        reply: "The AI is thinking... try again in a moment! 🤔"
       });
     }
 
     const data = await response.json();
-    console.log("✅ Data:", data);
-
-    let reply = data?.[0]?.generated_text || data?.generated_text || "Try again!";
+    const reply = data?.[0]?.generated_text || "Could not generate response.";
     
     return res.status(200).json({ reply: reply.trim() });
     
-  } catch (err) {
-    console.error("Error:", err.message);
+  } catch (error) {
+    console.error("Error:", error);
     return res.status(200).json({ 
-      reply: "Error occurred. Please retry! 😅"
+      reply: "Something went wrong. Please try again! 😅"
     });
   }
 }
