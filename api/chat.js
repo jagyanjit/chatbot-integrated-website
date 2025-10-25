@@ -1,19 +1,21 @@
-// api/chat.js - Hugging Face version
+// api/chat.js
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    const body = req.body || {};
+    const body = req.body || (await new Promise((resolve, reject) => {
+      let data = '';
+      req.on('data', chunk => data += chunk);
+      req.on('end', () => resolve(JSON.parse(data || '{}')));
+      req.on('error', reject);
+    }));
+
     const userMessage = (body.message || "").toString().slice(0, 500);
+    if (!userMessage) return res.status(400).json({ error: "Missing 'message'" });
 
-    if (!userMessage) {
-      return res.status(400).json({ error: "Missing 'message' in request body." });
-    }
-
-    // Hugging Face text-generation model
-    const model = "distilgpt2"; // small free model, good for testing
+    const model = "distilgpt2";
 
     const apiRes = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
       method: "POST",
@@ -32,7 +34,6 @@ export default async function handler(req, res) {
 
     const data = await apiRes.json();
     const reply = data?.[0]?.generated_text || "Sorry, I couldn't come up with an answer.";
-
     return res.status(200).json({ reply });
   } catch (err) {
     console.error(err);
