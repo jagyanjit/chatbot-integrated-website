@@ -821,22 +821,6 @@
            💬 MINIMAL AESTHETIC CHAT WIDGET - "APPRENTICE"
            ================================================ */
 
-        /* Chat Overlay for Click Outside */
-        #chatOverlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: transparent;
-            z-index: 9998;
-            display: none;
-        }
-
-        #chatOverlay.active {
-            display: block;
-        }
-
         #chatBubble {
             position: fixed;
             bottom: 24px;
@@ -946,11 +930,18 @@
             color: #888888;
         }
 
+        .chat-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chat-delete-btn,
         .chat-close-btn {
             background: transparent;
             border: none;
             color: #888888;
-            font-size: 20px;
+            font-size: 18px;
             cursor: pointer;
             padding: 4px;
             display: flex;
@@ -958,6 +949,13 @@
             justify-content: center;
             transition: all 0.2s ease;
             border-radius: 4px;
+            width: 32px;
+            height: 32px;
+        }
+
+        .chat-delete-btn:hover {
+            color: #ff4444;
+            background: #1a1a1a;
         }
 
         .chat-close-btn:hover {
@@ -1757,8 +1755,6 @@
     </main>
 
     <!-- 💬 MINIMAL AESTHETIC CHAT WIDGET - "APPRENTICE" -->
-    <div id="chatOverlay"></div>
-    
     <div id="chatBubble">
         <div id="chatPanel" class="chat-panel" role="dialog" aria-label="Apprentice AI Assistant">
             <div class="chat-header">
@@ -1769,9 +1765,14 @@
                         <p>AI Assistant</p>
                     </div>
                 </div>
-                <button id="closeChat" class="chat-close-btn" aria-label="Close chat">
-                    <i class="fas fa-times"></i>
-                </button>
+                <div class="chat-header-actions">
+                    <button id="deleteChat" class="chat-delete-btn" aria-label="Clear chat" title="Clear chat">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                    <button id="closeChat" class="chat-close-btn" aria-label="Close chat" title="Close chat">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
             </div>
             <div id="messages" class="chat-messages"></div>
             <div class="chat-input">
@@ -2152,18 +2153,17 @@
             const openBtn = document.getElementById("openBtn");
             const chatPanel = document.getElementById("chatPanel");
             const closeChat = document.getElementById("closeChat");
+            const deleteChat = document.getElementById("deleteChat");
             const messagesEl = document.getElementById("messages");
             const inputEl = document.getElementById("messageInput");
             const sendBtn = document.getElementById("sendBtn");
-            const chatOverlay = document.getElementById("chatOverlay");
 
             const BACKEND_URL = "https://chatbot-integrated-website.vercel.app/api/chat";
 
-            if (openBtn && chatPanel && closeChat && messagesEl && inputEl && sendBtn) {
+            if (openBtn && chatPanel && closeChat && deleteChat && messagesEl && inputEl && sendBtn) {
                 
                 openBtn.addEventListener("click", () => {
                     chatPanel.classList.add("open");
-                    chatOverlay.classList.add("active");
                     openBtn.style.display = "none";
                     setTimeout(() => inputEl.focus(), 500);
                     
@@ -2176,16 +2176,31 @@
 
                 const closeAllChat = () => {
                     chatPanel.classList.remove("open");
-                    chatOverlay.classList.remove("active");
                     setTimeout(() => {
                         openBtn.style.display = "flex";
                     }, 400);
                 };
 
                 closeChat.addEventListener("click", closeAllChat);
-                
-                // Close on overlay click
-                chatOverlay.addEventListener("click", closeAllChat);
+
+                // Delete/Clear chat functionality
+                deleteChat.addEventListener("click", () => {
+                    if (confirm("Clear all chat history?")) {
+                        messagesEl.innerHTML = '';
+                        setTimeout(() => {
+                            addBotMessage("Hi! I'm Apprentice. How can I help you today?");
+                        }, 200);
+                    }
+                });
+
+                // Click outside to close
+                document.addEventListener('click', (e) => {
+                    if (chatPanel.classList.contains('open')) {
+                        if (!chatPanel.contains(e.target) && !openBtn.contains(e.target)) {
+                            closeAllChat();
+                        }
+                    }
+                });
 
                 function addUserMessage(text) {
                     const div = document.createElement("div");
