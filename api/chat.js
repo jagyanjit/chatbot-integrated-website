@@ -4,11 +4,10 @@ export default async function handler(req, res) {
   const { message } = req.body;
   if (!message) return res.status(400).json({ error: "Missing message" });
 
-  try {
-    // Replace with any HF model that works with Router API
-    const HF_MODEL = "meta-llama/Llama-3.1-8B-Instruct";
-    const HF_URL = `https://router.huggingface.co/hf-inference/${HF_MODEL}`;
+  const HF_MODEL = "mistralai/Mistral-7B-Instruct-v0.3";
+  const HF_URL = `https://router.huggingface.co/hf-inference/${HF_MODEL}`;
 
+  try {
     const response = await fetch(HF_URL, {
       method: "POST",
       headers: {
@@ -24,10 +23,11 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json();
-    const reply = data.generated_text || "Sorry, I couldn't generate a reply.";
+    const reply = Array.isArray(data) && data[0]?.generated_text 
+      ? data[0].generated_text 
+      : "Sorry, I couldn't generate a reply.";
 
     res.status(200).json({ reply });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error", details: err.message });
