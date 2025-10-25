@@ -1032,11 +1032,12 @@
             }
         }
 
+        /* USER MESSAGE - GREEN */
         .msg.user {
-            background: var(--accent-blue);
+            background: var(--accent-green);
             color: #ffffff;
             align-self: flex-end;
-            border: 1px solid var(--accent-blue);
+            border: 1px solid var(--accent-green);
         }
 
         .msg.bot {
@@ -1110,17 +1111,19 @@
             transition: all 0.2s ease;
         }
 
+        /* INPUT FOCUS - GREEN */
         .chat-input input:focus {
-            border-color: var(--accent-blue);
+            border-color: var(--accent-green);
         }
 
         .chat-input input::placeholder {
             color: var(--text-secondary);
         }
 
+        /* SEND BUTTON - GREEN */
         .chat-send-btn {
-            background: var(--accent-blue);
-            border: 1px solid var(--accent-blue);
+            background: var(--accent-green);
+            border: 1px solid var(--accent-green);
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -1135,7 +1138,8 @@
         }
 
         .chat-send-btn:hover {
-            opacity: 0.9;
+            background: var(--accent-green-hover);
+            border-color: var(--accent-green-hover);
             transform: scale(1.05);
         }
 
@@ -2293,9 +2297,8 @@
 
                 const closeAllChat = () => {
                     chatPanel.classList.remove("open");
-                    setTimeout(() => {
-                        openBtn.style.display = "flex";
-                    }, 400);
+                    // Show button immediately instead of after timeout
+                    openBtn.style.display = "flex";
                 };
 
                 closeChat.addEventListener("click", closeAllChat);
