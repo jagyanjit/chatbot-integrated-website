@@ -6,7 +6,7 @@ export default async function handler(req, res) {
 
   try {
     // Replace with any HF model that works with Router API
-    const HF_MODEL = "TheBloke/wizardLM-7B-uncensored-GPTQ";
+    const HF_MODEL = "meta-llama/Llama-3.1-8B-Instruct";
     const HF_URL = `https://router.huggingface.co/hf-inference/${HF_MODEL}`;
 
     const response = await fetch(HF_URL, {
