@@ -8,7 +8,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Missing message" });
   }
 
-  // 🔥 Using newest Qwen model
+  // ✅ CORRECT: Use newer model and correct URL
   const HF_MODEL = "Qwen/Qwen2.5-7B-Instruct";
   const HF_URL = `https://api-inference.huggingface.co/models/${HF_MODEL}`;
 
@@ -32,31 +32,36 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       const errText = await response.text();
-      console.error("HF API Error:", errText);
+      console.error("❌ HF API Error:", response.status, errText);
       return res.status(502).json({ 
         error: "Error from HF provider", 
-        details: errText 
+        details: errText,
+        reply: "Sorry, the AI service is temporarily unavailable. Please try again."
       });
     }
 
     const data = await response.json();
-    console.log("HF Response:", data);
+    console.log("✅ HF Response:", data);
     
     let reply;
     if (Array.isArray(data) && data[0]?.generated_text) {
       reply = data[0].generated_text;
     } else if (data?.generated_text) {
       reply = data.generated_text;
+    } else if (data?.[0]?.generated_text) {
+      reply = data[0].generated_text;
     } else {
-      reply = "Sorry, I couldn't generate a reply.";
+      console.error("❌ Unexpected response format:", data);
+      reply = "I received an unexpected response. Please try again.";
     }
 
     res.status(200).json({ reply });
   } catch (err) {
-    console.error("Server error:", err);
+    console.error("❌ Server error:", err);
     res.status(500).json({ 
       error: "Server error", 
-      details: err.message 
+      details: err.message,
+      reply: "Something went wrong. Please try again later."
     });
   }
 }
