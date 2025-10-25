@@ -13,7 +13,7 @@ export default async function handler(req, res) {
     }
 
     // Hugging Face text-generation model
-    const model = "gpt2"; // small free model, good for testing
+    const model = "distilgpt2"; // small free model, good for testing
 
     const apiRes = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
       method: "POST",
