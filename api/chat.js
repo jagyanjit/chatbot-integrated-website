@@ -8,12 +8,12 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Missing message" });
   }
 
-  // ✅ TinyLlama - Fast, free, no gating, great for chat
+  // ✅ CORRECT MODEL NAME - Copy this EXACTLY
   const HF_MODEL = "TinyLlama/TinyLlama-1.1B-Chat-v1.0";
   const HF_URL = `https://api-inference.huggingface.co/models/${HF_MODEL}`;
 
   try {
-    console.log("🚀 Sending to:", HF_URL);
+    console.log("🚀 Requesting:", HF_URL);
     
     const response = await fetch(HF_URL, {
       method: "POST",
@@ -36,16 +36,29 @@ export default async function handler(req, res) {
     });
 
     console.log("📡 Status:", response.status);
-    
-    const data = await response.json();
-    console.log("✅ Response:", JSON.stringify(data, null, 2));
 
+    // ✅ FIX: Check content type before parsing JSON
+    const contentType = response.headers.get("content-type");
+    
     if (!response.ok) {
-      console.error("❌ Error:", data);
+      const errorText = await response.text();
+      console.error("❌ API Error:", response.status, errorText);
       return res.status(200).json({ 
-        reply: "I'm warming up... try again in a moment! 🔄"
+        reply: "I'm waking up! Please try again in 5 seconds. 🔄"
       });
     }
+
+    // ✅ FIX: Only parse JSON if it's actually JSON
+    if (!contentType || !contentType.includes("application/json")) {
+      const text = await response.text();
+      console.error("❌ Non-JSON response:", text);
+      return res.status(200).json({ 
+        reply: "Model is loading... try again in a moment! ⏳"
+      });
+    }
+
+    const data = await response.json();
+    console.log("✅ Response:", JSON.stringify(data, null, 2));
 
     let reply;
     
@@ -54,16 +67,16 @@ export default async function handler(req, res) {
     } else if (data?.generated_text) {
       reply = data.generated_text;
     } else {
-      reply = "I couldn't generate a response. Try rephrasing?";
+      console.error("❌ Unexpected format:", data);
+      reply = "I couldn't generate a response. Try again?";
     }
 
-    // Clean up response
     reply = reply.trim();
-
+    
     return res.status(200).json({ reply });
     
   } catch (err) {
-    console.error("❌ Error:", err);
+    console.error("❌ Catch Error:", err.message);
     return res.status(200).json({ 
       reply: "Oops! Something went wrong. Try again! 😅"
     });
