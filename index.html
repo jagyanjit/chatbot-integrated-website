@@ -822,7 +822,7 @@
             position: fixed;
             bottom: 25px;
             right: 25px;
-            z-index: 1000;
+            z-index: 10000;
         }
 
         .chat-button {
@@ -853,18 +853,19 @@
             max-height: 500px;
             background: #1f1f23;
             border-radius: 16px;
-            display: flex;
+            display: none;
             flex-direction: column;
             overflow: hidden;
             box-shadow: 0 12px 40px rgba(0,0,0,0.25);
-            transform: translateY(100%);
             opacity: 0;
-            transition: all 0.5s ease;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
 
         .chat-panel.open {
-            transform: translateY(0);
+            display: flex;
             opacity: 1;
+            transform: translateY(0);
         }
 
         .chat-header {
@@ -888,6 +889,12 @@
             color: white;
             font-size: 20px;
             cursor: pointer;
+            padding: 4px 8px;
+            line-height: 1;
+        }
+
+        .chat-header button:hover {
+            opacity: 0.8;
         }
 
         .chat-messages {
@@ -897,6 +904,7 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
+            background: #2c2c2e;
         }
 
         .msg {
@@ -905,6 +913,7 @@
             border-radius: 14px;
             line-height: 1.4;
             font-size: 14px;
+            word-wrap: break-word;
         }
 
         .msg.user {
@@ -921,33 +930,12 @@
             border-bottom-left-radius: 2px;
         }
 
-        .typing-indicator {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .dot {
-            width: 6px;
-            height: 6px;
-            background: #fff;
-            border-radius: 50%;
-            animation: bounce 1s infinite;
-        }
-
-        .dot:nth-child(2) { animation-delay: 0.2s; }
-        .dot:nth-child(3) { animation-delay: 0.4s; }
-
-        @keyframes bounce {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1); }
-        }
-
         .chat-input {
             display: flex;
             padding: 12px;
             border-top: 1px solid #444;
             background: #2c2c2e;
+            gap: 8px;
         }
 
         .chat-input input {
@@ -957,18 +945,19 @@
             border: none;
             outline: none;
             font-size: 14px;
+            font-family: inherit;
         }
 
         .chat-input button {
-            margin-left: 8px;
             background: #7c3aed;
             border: none;
             border-radius: 12px;
-            padding: 0 16px;
+            padding: 10px 16px;
             color: white;
             font-weight: 600;
             cursor: pointer;
             transition: background 0.3s;
+            white-space: nowrap;
         }
 
         .chat-input button:hover {
@@ -1073,11 +1062,12 @@
                 gap: 1rem;
             }
 
-            /* Adjust chat widget on mobile */
+            /* Chat widget adjustments */
             .chat-panel {
-                width: 90%;
+                width: calc(100% - 40px);
                 max-width: 350px;
-                right: 5%;
+                right: 20px;
+                left: 20px;
                 bottom: 90px;
             }
 
@@ -1209,12 +1199,13 @@
                 padding: 1.25rem;
             }
 
-            /* Make chat panel full width on very small screens */
+            /* Chat widget full width on small screens */
             .chat-panel {
                 width: calc(100% - 20px);
                 right: 10px;
                 left: 10px;
                 bottom: 85px;
+                max-height: 450px;
             }
         }
 
@@ -1974,76 +1965,86 @@
             const sendBtn = document.getElementById("sendBtn");
 
             // === CONFIGURE THIS ===
-            const BACKEND_URL = "YOUR_BACKEND_URL_HERE";
+            const BACKEND_URL = "https://chatbot-integrated-website.vercel.app/api/chat";
             // Replace above with your actual backend URL once deployed
 
-            openBtn.addEventListener("click", () => {
-                chatPanel.classList.add("open");
-                openBtn.style.display = "none";
-                inputEl.focus();
-                if (!messagesEl.hasChildNodes()) {
-                    addBotMessage("Hi! I'm Jagyanjit Assistant. Ask me about my work or skills.");
+            if (openBtn && chatPanel && closeChat && messagesEl && inputEl && sendBtn) {
+                openBtn.addEventListener("click", () => {
+                    console.log("Chat button clicked!"); // Debug log
+                    chatPanel.classList.add("open");
+                    openBtn.style.display = "none";
+                    setTimeout(() => inputEl.focus(), 100);
+                    
+                    if (messagesEl.children.length === 0) {
+                        addBotMessage("Hi! I'm Apprentice. Ask me about my work or skills.");
+                    }
+                });
+
+                closeChat.addEventListener("click", () => {
+                    console.log("Close button clicked!"); // Debug log
+                    chatPanel.classList.remove("open");
+                    setTimeout(() => {
+                        openBtn.style.display = "flex";
+                    }, 300);
+                });
+
+                function addUserMessage(text) {
+                    const div = document.createElement("div");
+                    div.className = "msg user";
+                    div.textContent = text;
+                    messagesEl.appendChild(div);
+                    scrollBottom();
                 }
-            });
 
-            closeChat.addEventListener("click", () => {
-                chatPanel.classList.remove("open");
-                openBtn.style.display = "flex";
-            });
-
-            function addUserMessage(text) {
-                const div = document.createElement("div");
-                div.className = "msg user";
-                div.textContent = text;
-                messagesEl.appendChild(div);
-                scrollBottom();
-            }
-
-            function addBotMessage(text) {
-                const div = document.createElement("div");
-                div.className = "msg bot";
-                div.textContent = text;
-                messagesEl.appendChild(div);
-                scrollBottom();
-            }
-
-            function scrollBottom() {
-                messagesEl.scrollTop = messagesEl.scrollHeight;
-            }
-
-            async function sendMessage() {
-                const text = inputEl.value.trim();
-                if (!text) return;
-                addUserMessage(text);
-                inputEl.value = "";
-                addBotMessage("…thinking…");
-
-                try {
-                    const res = await fetch(BACKEND_URL, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ message: text }),
-                    });
-                    const data = await res.json();
-
-                    // Remove "thinking..." placeholder
-                    const last = [...messagesEl.querySelectorAll('.msg.bot')].pop();
-                    if (last && last.textContent === "…thinking…") last.remove();
-
-                    if (data.reply) addBotMessage(data.reply);
-                    else addBotMessage("Sorry, I couldn't get a reply.");
-                } catch (err) {
-                    console.error(err);
-                    const last = [...messagesEl.querySelectorAll('.msg.bot')].pop();
-                    if (last && last.textContent === "…thinking…") last.remove();
-                    addBotMessage("Network error. Try again later.");
+                function addBotMessage(text) {
+                    const div = document.createElement("div");
+                    div.className = "msg bot";
+                    div.textContent = text;
+                    messagesEl.appendChild(div);
+                    scrollBottom();
                 }
-            }
 
-            sendBtn.addEventListener("click", sendMessage);
-            inputEl.addEventListener("keydown", (e) => {
-                if (e.key === "Enter") sendMessage();
-            });
+                function scrollBottom() {
+                    messagesEl.scrollTop = messagesEl.scrollHeight;
+                }
+
+                async function sendMessage() {
+                    const text = inputEl.value.trim();
+                    if (!text) return;
+                    
+                    addUserMessage(text);
+                    inputEl.value = "";
+                    addBotMessage("…thinking…");
+
+                    try {
+                        const res = await fetch(BACKEND_URL, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ message: text }),
+                        });
+                        const data = await res.json();
+
+                        // Remove "thinking..." placeholder
+                        const last = [...messagesEl.querySelectorAll('.msg.bot')].pop();
+                        if (last && last.textContent === "…thinking…") last.remove();
+
+                        if (data.reply) addBotMessage(data.reply);
+                        else addBotMessage("Sorry, I couldn't get a reply.");
+                    } catch (err) {
+                        console.error(err);
+                        const last = [...messagesEl.querySelectorAll('.msg.bot')].pop();
+                        if (last && last.textContent === "…thinking…") last.remove();
+                        addBotMessage("Network error. Try again later.");
+                    }
+                }
+
+                sendBtn.addEventListener("click", sendMessage);
+                inputEl.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") sendMessage();
+                });
+            } else {
+                console.error("Chat widget elements not found!");
+            }
 
         });
     </script>
