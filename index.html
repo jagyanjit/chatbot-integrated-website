@@ -844,6 +844,11 @@
             position: relative;
         }
 
+        /* Hidden class for button */
+        .chat-button.hidden {
+            display: none !important;
+        }
+
         body.light-mode .chat-button {
             background: #000000;
             border: 1px solid #333333;
@@ -2266,7 +2271,7 @@
 
 
             // ================================================
-            // 💬 APPRENTICE CHAT WIDGET LOGIC
+            // 💬 APPRENTICE CHAT WIDGET LOGIC (FIXED)
             // ================================================
             const openBtn = document.getElementById("openBtn");
             const chatPanel = document.getElementById("chatPanel");
@@ -2279,13 +2284,15 @@
             const confirmCancel = document.getElementById("confirmCancel");
             const confirmDelete = document.getElementById("confirmDelete");
 
-            const BACKEND_URL = "https://chatbot-integrated-website.vercel.app/api/chat";
+            const BACKEND_URL = "/api/chat";
 
             if (openBtn && chatPanel && closeChat && deleteChat && messagesEl && inputEl && sendBtn) {
                 
-                openBtn.addEventListener("click", () => {
+                // Open chat
+                openBtn.addEventListener("click", (e) => {
+                    e.stopPropagation(); // Prevent immediate close from document click
                     chatPanel.classList.add("open");
-                    openBtn.style.display = "none";
+                    openBtn.classList.add("hidden"); // Use class instead of inline style
                     setTimeout(() => inputEl.focus(), 500);
                     
                     if (messagesEl.children.length === 0) {
@@ -2295,16 +2302,20 @@
                     }
                 });
 
+                // Close chat
                 const closeAllChat = () => {
                     chatPanel.classList.remove("open");
-                    // Show button immediately instead of after timeout
-                    openBtn.style.display = "flex";
+                    openBtn.classList.remove("hidden"); // Remove hidden class
                 };
 
-                closeChat.addEventListener("click", closeAllChat);
+                closeChat.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    closeAllChat();
+                });
 
-                // Delete chat with custom confirmation
-                deleteChat.addEventListener("click", () => {
+                // Delete chat confirmation
+                deleteChat.addEventListener("click", (e) => {
+                    e.stopPropagation();
                     chatConfirmOverlay.classList.add("active");
                 });
 
@@ -2320,7 +2331,7 @@
                     }, 200);
                 });
 
-                // Click outside to close chat
+                // Click outside to close
                 document.addEventListener('click', (e) => {
                     if (chatPanel.classList.contains('open')) {
                         if (!chatPanel.contains(e.target) && !openBtn.contains(e.target)) {
@@ -2329,6 +2340,7 @@
                     }
                 });
 
+                // Helper functions
                 function addUserMessage(text) {
                     const div = document.createElement("div");
                     div.className = "msg user";
