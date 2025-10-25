@@ -17,7 +17,7 @@ export default async function handler(req, res) {
 
     const model = "distilgpt2";
 
-    const apiRes = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+    const apiRes = await fetch(`https://router.huggingface.co/hf-inference/${model}`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${process.env.HF_API_KEY}`,
