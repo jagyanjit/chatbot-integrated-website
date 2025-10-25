@@ -1495,6 +1495,9 @@
 </head>
 <body>
 
+    <!-- YOUR EXISTING HTML CONTENT GOES HERE... -->
+    <!-- ... (All your headers, aside, main, etc.) ... -->
+
     <header class="sidebar-header">
         <a id="logo-link" class="header-logo">Jagyanjit Rout</a>
     </header>
@@ -1868,18 +1871,6 @@
     <!-- 💬 CHAT WIDGET WITH THEME SUPPORT -->
     <div id="chatBubble">
         <div id="chatPanel" class="chat-panel" role="dialog" aria-label="Apprentice AI Assistant">
-            <!-- Custom Confirmation Modal -->
-            <div id="chatConfirmOverlay" class="chat-confirm-overlay">
-                <div class="chat-confirm-box">
-                    <h4>Clear Chat History?</h4>
-                    <p>This will delete all messages in this conversation.</p>
-                    <div class="chat-confirm-actions">
-                        <button class="chat-confirm-btn cancel" id="confirmCancel">Cancel</button>
-                        <button class="chat-confirm-btn confirm" id="confirmDelete">Clear</button>
-                    </div>
-                </div>
-            </div>
-
             <div class="chat-header">
                 <div class="chat-header-content">
                     <div class="chat-avatar">A</div>
@@ -2065,8 +2056,7 @@
                     </div>
                 </details>
                 <details>
-                    <summary>Covid-19 Prediction</summary>
-                    <div>
+                    <summary>Covid-19 Prediction</summary><div>
                         <p>Built a model to predict COVID-19 test results using symptom and demographic data. Trained a Logistic Regression model and validated its performance with a confusion matrix and classification report.</p>
                     </div>
                 </details>
@@ -2183,21 +2173,18 @@
                 if (isLight) {
                     body.classList.add('light-mode');
                     themeCheckbox.checked = true;
-                    statsGraphMain.src = lightGraphUrl;
-                    localStorage.setItem('theme', 'light');
+                    if(statsGraphMain) statsGraphMain.src = lightGraphUrl;
                 } else {
                     body.classList.remove('light-mode');
                     themeCheckbox.checked = false;
-                    statsGraphMain.src = darkGraphUrl;
-                    localStorage.setItem('theme', 'dark');
+                    if(statsGraphMain) statsGraphMain.src = darkGraphUrl;
                 }
+                 localStorage.setItem('theme', isLight ? 'light' : 'dark');
             }
 
-            // Set initial theme on page load
             const savedTheme = localStorage.getItem('theme');
             setTheme(savedTheme === 'light');
 
-            // Add listener for toggle
             themeCheckbox.addEventListener('change', () => {
                 setTheme(themeCheckbox.checked);
             });
@@ -2213,179 +2200,98 @@
 
             document.getElementById('logo-link')?.addEventListener('click', scrollToTop);
             document.getElementById('logo-link-main')?.addEventListener('click', scrollToTop);
-
-            // Desktop and mobile navigation - unified
-            const setupNavigation = () => {
-                // Desktop navigation links
-                document.querySelectorAll('.nav-link').forEach(anchor => {
-                    anchor.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        const targetId = this.getAttribute('data-target-main') || this.getAttribute('data-target-side');
-                        const targetElement = document.querySelector(targetId);
-                        
-                        if (targetElement) {
-                            if (window.innerWidth <= 1200) {
-                                // Mobile: scroll the whole page
-                                const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight - 16;
-                                window.scrollTo({
-                                    top: targetPosition,
-                                    behavior: 'smooth'
-                                });
-                            } else {
-                                // Desktop: scroll specific container
-                                if (this.getAttribute('data-target-main')) {
-                                    mainContent.scrollTo({
-                                        top: targetElement.offsetTop - scrollOffset,
-                                        behavior: 'smooth'
-                                    });
-                                } else {
-                                    sidebar.scrollTo({
-                                        top: targetElement.offsetTop - scrollOffset,
-                                        behavior: 'smooth'
-                                    });
-                                }
-                            }
-                        }
-                    });
+            
+            document.querySelectorAll('.nav-link, .mobile-nav-link').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('data-target-main') || this.getAttribute('data-target-side');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight - 16;
+                         window.scrollTo({
+                            top: targetPosition,
+                            behavior: 'smooth'
+                        });
+                    }
                 });
-
-                // Mobile menu navigation links
-                document.querySelectorAll('.mobile-nav-link').forEach(anchor => {
-                    anchor.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        const targetId = this.getAttribute('data-target-side') || this.getAttribute('data-target-main');
-                        const targetElement = document.querySelector(targetId);
-                        
-                        if (targetElement) {
-                            const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight - 16;
-                            window.scrollTo({
-                                top: targetPosition,
-                                behavior: 'smooth'
-                            });
-                        }
-                    });
-                });
-            };
-
-            setupNavigation();
-
+            });
 
             // ================================================
-            // 💬 APPRENTICE CHAT WIDGET LOGIC (FIXED)
+            // 💬 APPRENTICE CHAT WIDGET LOGIC (SIMPLE & CLEAN)
             // ================================================
             const openBtn = document.getElementById("openBtn");
             const chatPanel = document.getElementById("chatPanel");
             const closeChat = document.getElementById("closeChat");
-            const deleteChat = document.getElementById("deleteChat");
             const messagesEl = document.getElementById("messages");
             const inputEl = document.getElementById("messageInput");
             const sendBtn = document.getElementById("sendBtn");
-            const chatConfirmOverlay = document.getElementById("chatConfirmOverlay");
-            const confirmCancel = document.getElementById("confirmCancel");
-            const confirmDelete = document.getElementById("confirmDelete");
+            const deleteChatBtn = document.getElementById("deleteChat");
 
             const BACKEND_URL = "/api/chat";
 
-            if (openBtn && chatPanel && closeChat && deleteChat && messagesEl && inputEl && sendBtn) {
+            if (openBtn && chatPanel && closeChat && messagesEl && inputEl && sendBtn && deleteChatBtn) {
                 
-                // Open chat
-                openBtn.addEventListener("click", (e) => {
-                    e.stopPropagation(); // Prevent immediate close from document click
-                    chatPanel.classList.add("open");
-                    openBtn.classList.add("hidden"); // Use class instead of inline style
-                    setTimeout(() => inputEl.focus(), 500);
-                    
-                    if (messagesEl.children.length === 0) {
-                        setTimeout(() => {
-                            addBotMessage("Hi! I'm Apprentice. How can I help you today?");
-                        }, 400);
+                const toggleChat = (isOpen) => {
+                    if (isOpen) {
+                        chatPanel.classList.add("open");
+                        openBtn.classList.add("hidden");
+                        setTimeout(() => inputEl.focus(), 400);
+                        // Add initial message if chat is empty
+                        if (messagesEl.children.length === 0) {
+                            addBotMessage("Hi! I'm Apprentice. How can I help?");
+                        }
+                    } else {
+                        chatPanel.classList.remove("open");
+                        openBtn.classList.remove("hidden");
                     }
-                });
-
-                // Close chat
-                const closeAllChat = () => {
-                    chatPanel.classList.remove("open");
-                    openBtn.classList.remove("hidden"); // Remove hidden class
                 };
+
+                openBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    toggleChat(true);
+                });
 
                 closeChat.addEventListener("click", (e) => {
                     e.stopPropagation();
-                    closeAllChat();
+                    toggleChat(false);
                 });
 
-                // Delete chat confirmation
-                deleteChat.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    chatConfirmOverlay.classList.add("active");
-                });
-
-                confirmCancel.addEventListener("click", () => {
-                    chatConfirmOverlay.classList.remove("active");
-                });
-
-                confirmDelete.addEventListener("click", () => {
+                deleteChatBtn.addEventListener("click", () => {
                     messagesEl.innerHTML = '';
-                    chatConfirmOverlay.classList.remove("active");
-                    setTimeout(() => {
-                        addBotMessage("Hi! I'm Apprentice. How can I help you today?");
-                    }, 200);
+                    addBotMessage("Chat history cleared.");
                 });
-
-                // Click outside to close
+                
                 document.addEventListener('click', (e) => {
-                    if (chatPanel.classList.contains('open')) {
-                        if (!chatPanel.contains(e.target) && !openBtn.contains(e.target)) {
-                            closeAllChat();
-                        }
+                    if (chatPanel.classList.contains('open') && !chatPanel.contains(e.target) && e.target !== openBtn) {
+                        toggleChat(false);
                     }
                 });
 
-                // Helper functions
-                function addUserMessage(text) {
+                function addMessage(text, type) {
                     const div = document.createElement("div");
-                    div.className = "msg user";
+                    div.className = `msg ${type}`;
                     div.textContent = text;
                     messagesEl.appendChild(div);
-                    scrollBottom();
-                }
-
-                function addBotMessage(text) {
-                    const div = document.createElement("div");
-                    div.className = "msg bot";
-                    div.textContent = text;
-                    messagesEl.appendChild(div);
-                    scrollBottom();
-                }
-
-                function showTypingIndicator() {
-                    const div = document.createElement("div");
-                    div.className = "typing-indicator";
-                    div.id = "typing-indicator";
-                    div.innerHTML = `
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                    `;
-                    messagesEl.appendChild(div);
-                    scrollBottom();
-                }
-
-                function hideTypingIndicator() {
-                    const indicator = document.getElementById("typing-indicator");
-                    if (indicator) indicator.remove();
-                }
-
-                function scrollBottom() {
                     messagesEl.scrollTop = messagesEl.scrollHeight;
                 }
+                
+                function addUserMessage(text) { addMessage(text, 'user'); }
+                function addBotMessage(text) { addMessage(text, 'bot'); }
 
                 async function sendMessage() {
                     const text = inputEl.value.trim();
                     if (!text) return;
-                    
+
                     addUserMessage(text);
                     inputEl.value = "";
-                    showTypingIndicator();
+                    
+                    // Simple typing indicator
+                    const typingIndicator = document.createElement("div");
+                    typingIndicator.className = "msg bot";
+                    typingIndicator.textContent = "...";
+                    messagesEl.appendChild(typingIndicator);
+                    messagesEl.scrollTop = messagesEl.scrollHeight;
 
                     try {
                         const res = await fetch(BACKEND_URL, {
@@ -2395,17 +2301,19 @@
                         });
                         
                         const data = await res.json();
-                        hideTypingIndicator();
-
+                        
+                        // Remove typing indicator
+                        typingIndicator.remove();
+                        
                         if (data.reply) {
                             addBotMessage(data.reply);
                         } else {
                             addBotMessage("I couldn't process that. Try again?");
                         }
                     } catch (err) {
-                        console.error("Error:", err);
-                        hideTypingIndicator();
-                        addBotMessage("Connection error. Please try again.");
+                        console.error("Fetch Error:", err);
+                        typingIndicator.remove();
+                        addBotMessage("Connection error. Please check the console and try again.");
                     }
                 }
 
@@ -2416,8 +2324,9 @@
                         sendMessage();
                     }
                 });
+            } else {
+                 console.error("Critical Error: One or more chat widget elements are missing from the HTML!");
             }
-
         });
     </script>
     <script>
