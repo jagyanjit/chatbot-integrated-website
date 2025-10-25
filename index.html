@@ -817,6 +817,164 @@
         @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
         @keyframes zoomIn { from {transform: scale(0.9); opacity: 0;} to {transform: scale(1); opacity: 1;} }
 
+        /* --- Chat Widget Styles (NEW) --- */
+        #chatBubble {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            z-index: 1000;
+        }
+
+        .chat-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #7c3aed, #2563eb);
+            border: none;
+            cursor: pointer;
+            color: #fff;
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
+        }
+
+        .chat-button:hover {
+            transform: scale(1.1);
+        }
+
+        .chat-panel {
+            position: fixed;
+            bottom: 100px;
+            right: 25px;
+            width: 350px;
+            max-height: 500px;
+            background: #1f1f23;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+            transform: translateY(100%);
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        .chat-panel.open {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .chat-header {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: linear-gradient(135deg,#7c3aed,#2563eb);
+            color: white;
+            justify-content: space-between;
+        }
+
+        .chat-header h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .chat-header button {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 12px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .msg {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 14px;
+            line-height: 1.4;
+            font-size: 14px;
+        }
+
+        .msg.user {
+            background: #2563eb;
+            color: #fff;
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+        }
+
+        .msg.bot {
+            background: #e4e4e7;
+            color: #1f1f23;
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            background: #fff;
+            border-radius: 50%;
+            animation: bounce 1s infinite;
+        }
+
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 12px;
+            border-top: 1px solid #444;
+            background: #2c2c2e;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: none;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .chat-input button {
+            margin-left: 8px;
+            background: #7c3aed;
+            border: none;
+            border-radius: 12px;
+            padding: 0 16px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .chat-input button:hover {
+            background: #5b21b6;
+        }
+
         /* --- MOBILE RESPONSIVE --- */
         @media (max-width: 1200px) {
             .sidebar-header {
@@ -913,6 +1071,19 @@
             .card-grid {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 1rem;
+            }
+
+            /* Adjust chat widget on mobile */
+            .chat-panel {
+                width: 90%;
+                max-width: 350px;
+                right: 5%;
+                bottom: 90px;
+            }
+
+            #chatBubble {
+                right: 20px;
+                bottom: 20px;
             }
         }
 
@@ -1037,58 +1208,15 @@
             .modal-container {
                 padding: 1.25rem;
             }
+
+            /* Make chat panel full width on very small screens */
+            .chat-panel {
+                width: calc(100% - 20px);
+                right: 10px;
+                left: 10px;
+                bottom: 85px;
+            }
         }
-        
-        /* === Chat widget styles === */
-        .chat-bubble {
-          position: fixed;
-          right: 20px;
-          bottom: 20px;
-          z-index: 9999;
-        }
-        .chat-button {
-          width: 60px;
-          height: 60px;
-          border-radius: 50%;
-          background: linear-gradient(135deg,#2563eb,#7c3aed);
-          box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-          color: white;
-          border: none;
-          cursor: pointer;
-          font-size: 26px;
-        }
-        .chat-panel {
-          width: 340px;
-          height: 480px;
-          background: white;
-          border-radius: 12px;
-          box-shadow: 0 12px 30px rgba(0,0,0,0.2);
-          overflow: hidden;
-          display: flex;
-          flex-direction: column;
-          margin-bottom: 12px;
-        }
-        .chat-header {
-          padding: 12px;
-          display:flex;
-          align-items:center;
-          justify-content:space-between;
-          background:#111827;
-          color:white;
-        }
-        .chat-messages {
-          flex:1;
-          padding: 12px;
-          overflow-y:auto;
-          background:#f8fafc;
-        }
-        .msg { margin:8px 0; max-width:80%; padding:8px 10px; border-radius:10px; }
-        .msg.user { background:#e0f2fe; align-self:flex-end; text-align:right; }
-        .msg.bot { background:#eef2ff; align-self:flex-start; text-align:left; }
-        .chat-input { padding: 10px; border-top: 1px solid #e6edf3; display:flex; gap:8px; }
-        .chat-input input { flex:1; padding:8px 10px; border-radius:8px; border:1px solid #dfe6ee; }
-        .chat-input button { background:#2563eb; color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer; }
-        .small { font-size:12px; color:#6b7280; }
 
     </style>
 </head>
@@ -1464,6 +1592,22 @@
         </footer>
     </main>
 
+    <!-- Chat Widget -->
+    <div id="chatBubble">
+        <div id="chatPanel" class="chat-panel" role="dialog" aria-label="Jagyanjit Assistant">
+            <div class="chat-header">
+                <h3>Jagyanjit Assistant</h3>
+                <button id="closeChat">✕</button>
+            </div>
+            <div id="messages" class="chat-messages"></div>
+            <div class="chat-input">
+                <input id="messageInput" placeholder="Type your message..." />
+                <button id="sendBtn">Send</button>
+            </div>
+        </div>
+        <button id="openBtn" class="chat-button" title="Chat with Jagyanjit">💬</button>
+    </div>
+
 
     <div id="certModal" class="modal">
         <div class="modal-container">
@@ -1820,119 +1964,94 @@
 
             setupNavigation();
 
+
+            // --- Chat Widget Logic ---
+            const openBtn = document.getElementById("openBtn");
+            const chatPanel = document.getElementById("chatPanel");
+            const closeChat = document.getElementById("closeChat");
+            const messagesEl = document.getElementById("messages");
+            const inputEl = document.getElementById("messageInput");
+            const sendBtn = document.getElementById("sendBtn");
+
+            // === CONFIGURE THIS ===
+            const BACKEND_URL = "YOUR_BACKEND_URL_HERE";
+            // Replace above with your actual backend URL once deployed
+
+            openBtn.addEventListener("click", () => {
+                chatPanel.classList.add("open");
+                openBtn.style.display = "none";
+                inputEl.focus();
+                if (!messagesEl.hasChildNodes()) {
+                    addBotMessage("Hi! I'm Jagyanjit Assistant. Ask me about my work or skills.");
+                }
+            });
+
+            closeChat.addEventListener("click", () => {
+                chatPanel.classList.remove("open");
+                openBtn.style.display = "flex";
+            });
+
+            function addUserMessage(text) {
+                const div = document.createElement("div");
+                div.className = "msg user";
+                div.textContent = text;
+                messagesEl.appendChild(div);
+                scrollBottom();
+            }
+
+            function addBotMessage(text) {
+                const div = document.createElement("div");
+                div.className = "msg bot";
+                div.textContent = text;
+                messagesEl.appendChild(div);
+                scrollBottom();
+            }
+
+            function scrollBottom() {
+                messagesEl.scrollTop = messagesEl.scrollHeight;
+            }
+
+            async function sendMessage() {
+                const text = inputEl.value.trim();
+                if (!text) return;
+                addUserMessage(text);
+                inputEl.value = "";
+                addBotMessage("…thinking…");
+
+                try {
+                    const res = await fetch(BACKEND_URL, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ message: text }),
+                    });
+                    const data = await res.json();
+
+                    // Remove "thinking..." placeholder
+                    const last = [...messagesEl.querySelectorAll('.msg.bot')].pop();
+                    if (last && last.textContent === "…thinking…") last.remove();
+
+                    if (data.reply) addBotMessage(data.reply);
+                    else addBotMessage("Sorry, I couldn't get a reply.");
+                } catch (err) {
+                    console.error(err);
+                    const last = [...messagesEl.querySelectorAll('.msg.bot')].pop();
+                    if (last && last.textContent === "…thinking…") last.remove();
+                    addBotMessage("Network error. Try again later.");
+                }
+            }
+
+            sendBtn.addEventListener("click", sendMessage);
+            inputEl.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") sendMessage();
+            });
+
         });
     </script>
-      <script>
+    <script>
         if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("sw.js").then(() => console.log("Service Worker registered"));
+            navigator.serviceWorker.register("sw.js").then(() => console.log("Service Worker registered"));
         }
-      </script>
-        <!-- === Chat Widget === -->
-  <div class="chat-bubble" id="chatBubble">
-    <div id="chatPanel" style="display:none;" class="chat-panel" role="dialog" aria-label="Jagyanjit Assistant">
-      <div class="chat-header">
-        <div style="display:flex; gap:10px; align-items:center;">
-          <div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#7c3aed,#2563eb);display:flex;align-items:center;justify-content:center;font-weight:bold;">J</div>
-          <div>
-            <div style="font-weight:600">Jagyanjit Assistant</div>
-            <div class="small">Ask about my projects or skills</div>
-          </div>
-        </div>
-        <button id="closeChat" style="background:none;border:none;color:white;font-size:20px;cursor:pointer;">✕</button>
-      </div>
-
-      <div id="messages" class="chat-messages"></div>
-
-      <div class="chat-input">
-        <input id="messageInput" placeholder="Say hello..." />
-        <button id="sendBtn">Send</button>
-      </div>
-    </div>
-
-    <button id="openBtn" class="chat-button" title="Chat with Jagyanjit">💬</button>
-  </div>
-
-
-  <script>
-    // === CONFIGURE THIS ===
-    const BACKEND_URL = "https://chatbot-integrated-website.vercel.app/api/chat";
-    // Replace above with your actual backend URL once deployed
-
-    const openBtn = document.getElementById("openBtn");
-    const chatPanel = document.getElementById("chatPanel");
-    const closeChat = document.getElementById("closeChat");
-    const messagesEl = document.getElementById("messages");
-    const inputEl = document.getElementById("messageInput");
-    const sendBtn = document.getElementById("sendBtn");
-
-    openBtn.addEventListener("click", () => {
-      chatPanel.style.display = "flex";
-      openBtn.style.display = "none";
-      inputEl.focus();
-      if (messagesEl.childElementCount === 0) {
-        addBotMessage("Hi! I'm Jagyanjit Assistant. Ask me about my work or skills.");
-      }
-    });
-
-    closeChat.addEventListener("click", () => {
-      chatPanel.style.display = "none";
-      openBtn.style.display = "block";
-    });
-
-    function addUserMessage(text) {
-      const div = document.createElement("div");
-      div.className = "msg user";
-      div.textContent = text;
-      messagesEl.appendChild(div);
-      scrollBottom();
-    }
-
-    function addBotMessage(text) {
-      const div = document.createElement("div");
-      div.className = "msg bot";
-      div.textContent = text;
-      messagesEl.appendChild(div);
-      scrollBottom();
-    }
-
-    function scrollBottom() {
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-    }
-
-    async function sendMessage() {
-      const text = inputEl.value.trim();
-      if (!text) return;
-      addUserMessage(text);
-      inputEl.value = "";
-      addBotMessage("…thinking…");
-
-      try {
-        const res = await fetch(BACKEND_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: text }),
-        });
-        const data = await res.json();
-
-        // Remove "thinking..." placeholder
-        const last = [...messagesEl.querySelectorAll('.msg.bot')].pop();
-        if (last && last.textContent === "…thinking…") last.remove();
-
-        if (data.reply) addBotMessage(data.reply);
-        else addBotMessage("Sorry, I couldn't get a reply.");
-      } catch (err) {
-        console.error(err);
-        const last = [...messagesEl.querySelectorAll('.msg.bot')].pop();
-        if (last && last.textContent === "…thinking…") last.remove();
-        addBotMessage("Network error. Try again later.");
-      }
-    }
-
-    sendBtn.addEventListener("click", sendMessage);
-    inputEl.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") sendMessage();
-    });
-  </script>
+    </script>
 
 </body>
 </html>
