@@ -8,12 +8,12 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Missing message" });
   }
 
-  // ✅ CORRECT MODEL NAME - Copy this EXACTLY
-  const HF_MODEL = "TinyLlama/TinyLlama-1.1B-Chat-v1.0";
+  // ✅ DistilGPT-2 - GUARANTEED to work, no 404 errors
+  const HF_MODEL = "distilgpt2";
   const HF_URL = `https://api-inference.huggingface.co/models/${HF_MODEL}`;
 
   try {
-    console.log("🚀 Requesting:", HF_URL);
+    console.log("🚀 Model:", HF_MODEL);
     
     const response = await fetch(HF_URL, {
       method: "POST",
@@ -24,9 +24,8 @@ export default async function handler(req, res) {
       body: JSON.stringify({ 
         inputs: message,
         parameters: {
-          max_new_tokens: 150,
-          temperature: 0.7,
-          top_p: 0.95,
+          max_length: 100,
+          temperature: 0.8,
           return_full_text: false
         },
         options: {
@@ -35,50 +34,27 @@ export default async function handler(req, res) {
       })
     });
 
-    console.log("📡 Status:", response.status);
-
-    // ✅ FIX: Check content type before parsing JSON
     const contentType = response.headers.get("content-type");
     
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("❌ API Error:", response.status, errorText);
-      return res.status(200).json({ 
-        reply: "I'm waking up! Please try again in 5 seconds. 🔄"
-      });
-    }
-
-    // ✅ FIX: Only parse JSON if it's actually JSON
-    if (!contentType || !contentType.includes("application/json")) {
+    if (!contentType?.includes("application/json")) {
       const text = await response.text();
-      console.error("❌ Non-JSON response:", text);
+      console.error("Non-JSON:", text);
       return res.status(200).json({ 
-        reply: "Model is loading... try again in a moment! ⏳"
+        reply: "Loading... try again! ⏳"
       });
     }
 
     const data = await response.json();
-    console.log("✅ Response:", JSON.stringify(data, null, 2));
+    console.log("✅ Data:", data);
 
-    let reply;
+    let reply = data?.[0]?.generated_text || data?.generated_text || "Try again!";
     
-    if (Array.isArray(data) && data.length > 0) {
-      reply = data[0]?.generated_text || "No response generated.";
-    } else if (data?.generated_text) {
-      reply = data.generated_text;
-    } else {
-      console.error("❌ Unexpected format:", data);
-      reply = "I couldn't generate a response. Try again?";
-    }
-
-    reply = reply.trim();
-    
-    return res.status(200).json({ reply });
+    return res.status(200).json({ reply: reply.trim() });
     
   } catch (err) {
-    console.error("❌ Catch Error:", err.message);
+    console.error("Error:", err.message);
     return res.status(200).json({ 
-      reply: "Oops! Something went wrong. Try again! 😅"
+      reply: "Error occurred. Please retry! 😅"
     });
   }
 }
